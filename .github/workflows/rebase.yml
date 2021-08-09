@@ -17,6 +17,6 @@ jobs:
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Rebase
         # this specific hash was hand-validated by @cart. please validate new action code before updating
-        uses: cirrus-actions/rebase@b08442cca46e2ad6c1f3dd24a3320ece8498df75
+        uses: cirrus-actions/rebase@c473b716e3fcde0c6bf67416e2c2882830ad40f6
         env:
           GITHUB_TOKEN: ${{ secrets.CART_PAT }}
