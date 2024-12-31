@@ -1,5 +1,6 @@
 //! Implements loader for a custom asset type.
 
+use bevy::asset::LoadedUntypedAsset;
 use bevy::{
     asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
@@ -46,7 +47,7 @@ impl AssetLoader for CustomAssetLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["custom"]
+        &["Custom"]
     }
 }
 
@@ -101,7 +102,7 @@ fn main() {
 
 #[derive(Resource, Default)]
 struct State {
-    handle: Handle<CustomAsset>,
+    handle: Handle<LoadedUntypedAsset>,
     other_handle: Handle<CustomAsset>,
     blob: Handle<Blob>,
     printed: bool,
@@ -109,21 +110,28 @@ struct State {
 
 fn setup(mut state: ResMut<State>, asset_server: Res<AssetServer>) {
     // Recommended way to load an asset
-    state.handle = asset_server.load("data/asset.custom");
+    state.handle = asset_server.load_untyped("data/asset.Custom");
 
     // File extensions are optional, but are recommended for project management and last-resort inference
     state.other_handle = asset_server.load("data/asset_no_extension");
 
     // Will use BlobAssetLoader instead of CustomAssetLoader thanks to type inference
-    state.blob = asset_server.load("data/asset.custom");
+    state.blob = asset_server.load("data/asset.Custom");
 }
 
 fn print_on_load(
     mut state: ResMut<State>,
+    untyped: Res<Assets<LoadedUntypedAsset>>,
     custom_assets: Res<Assets<CustomAsset>>,
     blob_assets: Res<Assets<Blob>>,
 ) {
-    let custom_asset = custom_assets.get(&state.handle);
+    let untyped = untyped.get(&state.handle);
+
+    if untyped.is_none() {
+        info!("Untyped Asset Not Ready");
+        return;
+    }
+    let custom_asset = custom_assets.get(&untyped.unwrap().handle.clone().typed());
     let other_custom_asset = custom_assets.get(&state.other_handle);
     let blob = blob_assets.get(&state.blob);
 
